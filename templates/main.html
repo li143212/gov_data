@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+	<!-- Bootstrap Styles-->
+    <link href="static/css/bootstrap.css" rel="stylesheet" />
+     <!-- FontAwesome Styles-->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+        <!-- Custom Styles-->
+    <link href="static/css/custom-styles.css" rel="stylesheet" />
+     <!-- Google Fonts-->
+   <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+</head>
+<body>
+    <div id="wrapper">
+        <nav class="navbar navbar-default top-navbar" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('main') }}"><i class="fa fa-comments"></i> <strong>政务分析系统</strong><br/><small><small>坪山人民政府</small></small></a>
+            </div>
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false">
+                        <font size="1" color="white">Hello {{current_user.id}}! </font><i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+
+                        <li><a href="{{ url_for('logout') }}"> Logout</a></li>
+
+					</ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+        </nav>
+        <!--/. NAV TOP  -->
+        <nav class="navbar-default navbar-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="main-menu">
+
+                    <li>
+                        <a href="{{ url_for('main') }}"class="active-menu"><i class="fa fa-home"></i> 主页</a>
+                    </li>
+
+
+                    <li>
+                        <a href="#"><i class="fa fa-area-chart"></i>政务数据可视化<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="{{ url_for('pie') }}">民生分析</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('bar') }}">各街道民生事件情况</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('nest') }}">事件结办分析</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('map') }}">热点街区</a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('unsolved')}}"><i class="fa fa-fw fa-file"></i> 未结办事件</a>
+                    </li>
+                </ul>
+
+            </div>
+
+        </nav>
+        <!-- /. NAV SIDE  -->
+        <div id="page-wrapper">
+            <div id="page-inner">
+                <a href="{{url_for('unsolved')}}">
+                    <div id="scroll_div" class="fl" style="height:26px;overflow: hidden;white-space: nowrap;width:100%;margin-left:10px;">
+                        <div id="scroll_begin" style="display: inline;"></div>
+                        <div id="scroll_end" style="display: inline;"></div>
+                    </div>
+                </a>
+
+                <h1>
+                    今日民生
+                </h1>
+                <!-- /. ROW  -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{{url_for('pie')}}"><div id="chart1" style="width: 95%;height:300px;"></div></a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{url_for('bar')}}"><div id="chart2" style="width: 95%;height:300px;"></div></a>
+                    </div>
+                </div>
+                <p></p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{{url_for('nest')}}"><div id="chart3" style="width: 95%;height:300px;"></div></a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{url_for('map')}}"><div id="chart4" style="width: 95%;height:300px;"></div></a>
+                    </div>
+                </div>
+<!--				<footer></footer>-->
+            </div>
+            <!-- /. PAGE INNER  -->
+        </div>
+         <!-- /. PAGE WRAPPER  -->
+        </div>
+     <!-- /. WRAPPER  -->
+    <!-- JS Scripts-->
+    <script src='https://echarts.baidu.com/dist/echarts.min.js' type="text/javascript"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=SR9D00rCqPIT08F71LaLHyvPzzT9jPNm&__ec_v__=20190126"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+
+<script type="text/javascript">
+var data_test = {{data_1|tojson}};
+var dom = document.getElementById("chart1");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+app.title = '饼图';
+
+option = {
+    title: {
+        text: '民生分析',
+        left: 'center'
+    },
+    tooltip : {
+        trigger: 'item',
+        formatter: "{a} <br/>{b} : {c} ({d}%)"
+    },
+    legend: {
+        data: [],
+        show:false
+    },
+    series : [
+        {
+            name: '事件类型',
+            type: 'pie',
+            radius : '55%',
+            center: ['50%', '60%'],
+            label: {
+                normal: {
+                    show: true
+                }
+            },
+            data:[],
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+
+if (option && typeof option === "object") {
+    option['legend']['data'] = data_test['name'];
+    for(var i=0;i<data_test['name'].length;i++){
+        if(data_test['value'][i]!=0)
+            option['series'][0]['data'].push({value:data_test['value'][i],name:data_test['name'][i]});
+    }
+    myChart.setOption(option, true);
+}
+
+    </script>
+<script type="text/javascript">
+var data_in = {{data_2|tojson}};
+var dom = document.getElementById("chart2");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+app.title = '堆叠条形图';
+
+option = {
+    title: {
+        text: '各街道民生事件情况',
+        left: 'center'
+    },
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    legend: {
+        type: 'scroll',
+        top: 20,
+        data: [],
+        show:false
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    yAxis:  {
+        type: 'value'
+    },
+    xAxis: {
+        type: 'category',
+        data: []
+    },
+    series: []
+};;
+if (option && typeof option === "object") {
+    option['legend']['data'] = data_in['name'];
+    option['xAxis']['data'] = data_in['district'];
+    for(var i=0;i<data_in['name'].length;i++){
+        var sum = data_in['value'][i][0]+data_in['value'][i][1]+data_in['value'][i][2]+data_in['value'][i][3]+data_in['value'][i][4]+data_in['value'][i][5];
+        if(sum>0){
+            option['series'].push(
+            {
+                name:data_in['name'][i],
+                type: 'bar',
+                stack: '总量',
+                label: {
+                   normal: {
+                       show: false
+                   }
+                },
+                data: data_in['value'][i]
+            });
+        }
+
+    }
+    myChart.setOption(option, true);
+}
+                </script>
+<script type="text/javascript">
+var data_in = {{data_4|tojson}};
+var dom = document.getElementById("chart3");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+app.title = '嵌套环形图';
+
+option = {
+    title: {
+        text: '事件结办分析',
+        left: 'center'
+    },
+    tooltip: {
+        trigger: 'item',
+        formatter: "{a} <br/>{b}: {c} ({d}%)"
+    },
+    legend: [
+    {
+        type: 'scroll',
+        top: 40,
+        data: [],
+        show:true
+    },
+    {
+        type: 'scroll',
+        top: 60,
+        data: [],
+        show:false
+    }
+    ],
+    series: [
+        {
+            name:'处理情况',
+            type:'pie',
+            selectedMode: 'single',
+            radius: [0, '30%'],
+
+            label: {
+                normal: {
+                    //position: 'inner'
+                    show:false
+                }
+            },
+            labelLine: {
+                normal: {
+                    show: false
+                }
+            },
+            data:[]
+        },
+        {
+            name:'事件类型',
+            type:'pie',
+            radius: ['40%', '55%'],
+            label: {
+                normal: {
+                    show:false
+                {#    formatter: '{a|{a}}{abg|}\n{hr|}\n  {b|{b}：}{c}  {per|{d}%}  ',#}
+                {#    backgroundColor: '#eee',#}
+                {#    borderColor: '#aaa',#}
+                {#    borderWidth: 1,#}
+                {#    borderRadius: 4,#}
+                {#    // shadowBlur:3,#}
+                {#    // shadowOffsetX: 2,#}
+                {#    // shadowOffsetY: 2,#}
+                {#    // shadowColor: '#999',#}
+                {#    // padding: [0, 7],#}
+                {#    rich: {#}
+                {#        a: {#}
+                {#            color: '#999',#}
+                {#            lineHeight: 22,#}
+                {#            align: 'center'#}
+                {#        },#}
+                {#        // abg: {#}
+                {#        //     backgroundColor: '#333',#}
+                {#        //     width: '100%',#}
+                {#        //     align: 'right',#}
+                {#        //     height: 22,#}
+                {#        //     borderRadius: [4, 4, 0, 0]#}
+                {#        // },#}
+                {#        hr: {#}
+                {#            borderColor: '#aaa',#}
+                {#            width: '100%',#}
+                {#            borderWidth: 0.5,#}
+                {#            height: 0#}
+                {#        },#}
+                {#        b: {#}
+                {#            fontSize: 16,#}
+                {#            lineHeight: 33#}
+                {#        },#}
+                {#        per: {#}
+                {#            color: '#eee',#}
+                {#            backgroundColor: '#334455',#}
+                {#            padding: [2, 4],#}
+                {#            borderRadius: 2#}
+                {#        }#}
+                {#    }#}
+                }
+            },
+            data:[]
+        }
+    ]
+};;
+if (option && typeof option === "object") {
+    option['legend'][0]['data'] = data_in['name1'];
+    option['legend'][1]['data'] = data_in['name2'];
+    for(var i=0;i<data_in['name1'].length;i++){
+        option['series'][0]['data'].push({value:data_in['value1'][i],name:data_in['name1'][i]});
+    }
+    for(var i=0;i<data_in['name2'].length;i++){
+        if(data_in['value2'][i]!=0)
+            option['series'][1]['data'].push({value:data_in['value2'][i],name:data_in['name2'][i]});
+    }
+    myChart.setOption(option, true);
+}
+                </script>
+<script type="text/javascript">
+var data_in = {{data_3|tojson}};
+
+var dom = document.getElementById("chart4");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+var data = [];
+for(var i=0;i<data_in['name'].length;i++)
+{
+    data.push({name:data_in['name'][i],value:data_in['value'][i]});
+}
+var geoCoordMap = {
+    '马峦社区':[114.338203,22.644538],
+    '金龟社区':[114.406461,22.663744],
+    '汤坑社区':[114.331079,22.678805],
+    '江岭社区':[114.362596,22.69202],
+    '坪环社区':[114.35474,22.688096],
+    '坪山社区':[114.357265,22.696259],
+    '沙坣社区':[114.377888,22.690889],
+    '六联社区':[114.332971,22.795219],
+    '田头社区':[114.410837,22.697197],
+    '碧岭社区':[114.295663,22.67342],
+    '沙湖社区':[114.326552,22.67909],
+    '田心社区':[114.421943,22.700351],
+    '六和社区':[114.349914,22.707919],
+    '竹坑社区':[114.395074,22.715773],
+    '老坑社区':[114.369312,22.734866],
+    '坑梓社区':[114.390013,22.753031],
+    '和平社区':[114.355104,22.697106],
+    '石井社区':[114.390978,22.697625],
+    '南布社区':[114.375607,22.70534],
+    '金沙社区':[114.406008,22.75079],
+    '龙田社区':[114.372841,22.753346],
+    '沙田社区':[114.404444,22.761764],
+    '秀新社区':[114.381223,22.746873]
+};
+
+var convertData = function (data) {
+    var res = [];
+    for (var i = 0; i < data.length; i++) {
+        var geoCoord = geoCoordMap[data[i].name];
+        if (geoCoord) {
+            res.push({
+                name: data[i].name,
+                value: geoCoord.concat(data[i].value)
+            });
+        }
+    }
+    return res;
+};
+
+option = {
+    title: {
+        text: '热点社区',
+        left: 'center'
+    },
+    tooltip : {
+        trigger: 'item',
+        formatter:function(data){
+
+            return data.name+':'+data.value[2];
+        }
+    },
+    bmap: {
+        center: [114.383626,22.733577],
+        zoom: 13,
+        roam: true,
+        mapStyle: {
+            styleJson: [{
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'land',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#f3f3f3'
+                }
+            }, {
+                'featureType': 'railway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#fdfdfd'
+                }
+            }, {
+                'featureType': 'highway',
+                'elementType': 'labels',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'arterial',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#fefefe'
+                }
+            }, {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#fefefe'
+                }
+            }, {
+                'featureType': 'poi',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'green',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'subway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'local',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'arterial',
+                'elementType': 'labels',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }, {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#fefefe'
+                }
+            }, {
+                'featureType': 'building',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#d1d1d1'
+                }
+            }, {
+                'featureType': 'label',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#999999'
+                }
+            }]
+        }
+    },
+    series : [
+        {
+            name: '民生事件',
+            type: 'scatter',
+            coordinateSystem: 'bmap',
+            data: convertData(data),
+            symbolSize: function (val) {
+                return val[2] / 9;
+            },
+            label: {
+                normal: {
+                    formatter: '{b}',
+                    position: 'right',
+                    show: true
+                },
+                emphasis: {
+                    show: true
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: 'purple'
+                }
+            }
+        },
+        {
+            name: 'Top 5',
+            type: 'effectScatter',
+            coordinateSystem: 'bmap',
+            data: convertData(data.sort(function (a, b) {
+                return b.value - a.value;
+            }).slice(0, 6)),
+            symbolSize: function (val) {
+                return val[2] / 10;
+            },
+            showEffectOn: 'render',
+            rippleEffect: {
+                brushType: 'stroke'
+            },
+            hoverAnimation: true,
+            label: {
+                normal: {
+                    formatter: '{b}',
+                    position: 'right',
+                    show: true
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: 'purple',
+                    shadowBlur: 10,
+                    shadowColor: '#333'
+                }
+            },
+            zlevel: 1
+        }
+    ]
+};
+
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+                </script>
+<script>
+             //文字横向滚动
+        function ScrollImgLeft(){
+             var speed=50;
+             var MyMar = null;
+             var scroll_begin = document.getElementById("scroll_begin");
+             var scroll_end = document.getElementById("scroll_end");
+             var scroll_div = document.getElementById("scroll_div");
+             var data_warning_in = {{data_warning|tojson}};
+             var font_color = ['<font color="red">','<font color="blue">','<font color="violet">','<font color="goldenrod">','<font color="purple">','<font color="green">'];
+
+             for(var i=0;i<data_warning_in["name"].length;i++){
+                var new_content = document.createElement("span");
+                new_content.className = "pad_right";
+                new_content.innerHTML = '当前有'
+                    +font_color[i%font_color.length]+data_warning_in["value"][i]+'</font>'
+                    +'件'
+                    +font_color[i%font_color.length]+data_warning_in["name"][i]+'</font>'
+                    +'事件待解决。';
+                scroll_begin.appendChild(new_content);
+             }
+
+             scroll_end.innerHTML=scroll_begin.innerHTML;
+             function Marquee(){
+                  if(scroll_end.offsetWidth-scroll_div.scrollLeft<=0)
+                       scroll_div.scrollLeft-=scroll_begin.offsetWidth;
+                  else
+                       scroll_div.scrollLeft++;
+              }
+              MyMar=setInterval(Marquee,speed);
+              scroll_div.onmouseover = function(){
+    　　　　　　　    clearInterval(MyMar);
+　　　　　          }
+              scroll_div.onmouseout = function(){
+    　　　　　　　    MyMar = setInterval(Marquee,speed);　　　　
+    　　　　    }
+        }
+        ScrollImgLeft();
+</script>
+    <!-- jQuery Js -->
+    <script src="static/js/jquery-1.10.2.js"></script>
+      <!-- Bootstrap Js -->
+    <script src="static/js/bootstrap.min.js"></script>
+    <!-- Metis Menu Js -->
+    <script src="static/js/jquery.metisMenu.js"></script>
+      <!-- Custom Js -->
+    <script src="static/js/custom-scripts.js"></script>
+
+
+</body>
+</html>

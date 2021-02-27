@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+      <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+	<!-- Bootstrap Styles-->
+    <link href="static/css/bootstrap.css" rel="stylesheet" />
+     <!-- FontAwesome Styles-->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+        <!-- Custom Styles-->
+    <link href="static/css/custom-styles.css" rel="stylesheet" />
+     <!-- Google Fonts-->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+</head>
+<body>
+    <div id="wrapper">
+        <nav class="navbar navbar-default top-navbar" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{url_for('main')}}"><i class="fa fa-institution"></i> <strong>政务分析系统</strong><br/><small><small>坪山人民政府</small></small></a>
+            </div>
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <font size="1" color="white">Hello {{current_user.id}}! </font><i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+
+                        <li><a href="{{ url_for('logout') }}"></i> Logout</a>
+                    </ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+        </nav>
+        <!--/. NAV TOP  -->
+        <nav class="navbar-default navbar-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="main-menu">
+
+                    <li>
+                        <a href="{{ url_for('main') }}"><i class="fa fa-home"></i> 主页</a>
+                    </li>
+
+
+                    <li>
+                        <a href="#"><i class="fa fa-area-chart"></i>政务数据可视化<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="{{ url_for('pie') }}">民生分析</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('bar') }}">各街道民生事件情况</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('nest') }}">事件结办分析</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('map') }}">热点街区</a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('unsolved')}}"class="active-menu"><i class="fa fa-fw fa-file"></i> 未结办事件</a>
+                    </li>
+                </ul>
+
+            </div>
+
+        </nav>
+        <!-- /. NAV SIDE  -->
+        <div id="page-wrapper" >
+            <div id="page-inner">
+<!--                <div id="scroll_div" class="fl" style="height:26px;overflow: hidden;white-space: nowrap;width:1260px;margin-left:10px;">-->
+<!--                    <div id="scroll_begin" style="display: inline;"></div>-->
+<!--                    <div id="scroll_end" style="display: inline;"></div>-->
+<!--                </div>-->
+			 <div class="row">
+                    <div class="col-md-12">
+                        <h2 class="page-header">
+                            未结办事件
+                        </h2>
+                    </div>
+                </div>
+                <!-- /. ROW  -->
+
+<div  id="warp">
+    <div  id="content"style="background-color:black;width: 100%;height:600px;overflow: hidden;">
+        <ul id="list1"></ul>
+    </div>
+</div>
+
+
+<!--                <div id="main" style="width: 900px;height:500px;"></div>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>-->
+<script type="text/javascript">
+    var data_in = {{data|tojson}};
+    var content = document.getElementById('content');
+    var list1 = document.getElementById('list1');
+    var speed = 50;
+    content.scrollTop = 0;
+
+    for(var i=0;i<data_in[0].length;i++){
+        var newline = document.createElement('li');
+        newline.innerHTML = '<font size=5 color="white" style="background-color:goldenrod">'+data_in[0][i]+'</font>'
+            +'<font size=5 color="white" style="background-color:green">'+data_in[1][i]+'</font>'
+            +'<font size=5 color="white">的</font>'
+            +'<font size=5 color="white" style="background-color:blue">'+data_in[2][i]+'</font>'
+            +'<font size=5 color="white">从</font>'
+            +'<font size=5 color="white" style="background-color:violet">'+data_in[3][i]+'</font>'
+            +'<font size=5 color="white">接到</font>'
+            +'<font size=5 color="white" style="background-color:red">'+data_in[4][i]+'</font>'
+            +'<font size=5 color="white" style="background-color:blue">'+data_in[5][i]+'</font>'
+            +'<font size=5 color="white">，请</font>'
+            +'<font size=5 color="white" style="background-color:purple">'+data_in[6][i]+'</font>'
+            +'<font size=5 color="white">尽快前往处理。</font>';
+        list1.appendChild(newline);
+        list1.appendChild(document.createElement('p'));
+    }
+    for(var i=0;i<3;i++){
+        var samelist=document.createElement('ul');
+        samelist.innerHTML=list1.innerHTML;
+        document.getElementById('content').appendChild(samelist);
+    }
+
+    function scrollUp(){
+        if(content.scrollTop >= list1.scrollHeight+10) {
+            content.scrollTop = 0;
+        }else{
+            content.scrollTop ++;
+        }
+    }
+    var textScroll = setInterval("scrollUp()",speed);
+    content.onmouseover = function(){
+        clearInterval(textScroll);
+    }
+    content.onmouseout = function(){
+        textScroll = setInterval("scrollUp()",speed);
+    }
+</script>
+<!--                <footer><p>Copyright &copy; 2016.Company name All rights reserved.</p></footer>-->
+			</div>
+            <!-- /. PAGE INNER  -->
+         </div>
+         <!-- /. PAGE WRAPPER  -->
+    </div>
+     <!-- /. WRAPPER  -->
+      <!-- jQuery Js -->
+    <script src="static/js/jquery-1.10.2.js"></script>
+      <!-- Bootstrap Js -->
+    <script src="static/js/bootstrap.min.js"></script>
+    <!-- Metis Menu Js -->
+    <script src="static/js/jquery.metisMenu.js"></script>
+      <!-- Custom Js -->
+    <script src="static/js/custom-scripts.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+      <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+	<!-- Bootstrap Styles-->
+    <link href="static/css/bootstrap.css" rel="stylesheet" />
+     <!-- FontAwesome Styles-->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+        <!-- Custom Styles-->
+    <link href="static/css/custom-styles.css" rel="stylesheet" />
+     <!-- Google Fonts-->
+   <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+
+    <script type="text/javascript" src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+
+</head>
+<body>
+    <div id="wrapper">
+        <nav class="navbar navbar-default top-navbar" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('main') }}"><i class="fa fa-comments"></i> <strong>政务分析系统</strong><br/><small><small>坪山人民政府</small></small></a>
+            </div>
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false">
+                        <font size="1" color="white">Hello {{current_user.id}}! </font><i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+
+                        <li><a href="{{ url_for('logout') }}"></i> Logout</a>
+                        </li>
+
+					</ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+        </nav>
+        <!--/. NAV TOP  -->
+        <nav class="navbar-default navbar-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="main-menu">
+
+                    <li>
+                        <a href="{{ url_for('main') }}"><i class="fa fa-home"></i> 主页</a>
+                    </li>
+
+
+                    <li>
+                        <a href="#"class="active-menu"><i class="fa fa-area-chart"></i>政务数据可视化<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="{{ url_for('pie') }}">民生分析</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('bar') }}">各街道民生事件情况</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('nest') }}"class="active-menu">事件结办分析</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('map') }}">热点街区</a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('unsolved')}}"><i class="fa fa-fw fa-file"></i> 未结办事件</a>
+                    </li>
+                </ul>
+
+            </div>
+
+        </nav>
+        <!-- /. NAV SIDE  -->
+        <div id="page-wrapper" >
+            <div id="page-inner">
+                <a href="{{url_for('unsolved')}}">
+                    <div id="scroll_div" class="fl" style="height:26px;overflow: hidden;white-space: nowrap;width:100%;margin-left:10px;">
+                        <div id="scroll_begin" style="display: inline;"></div>
+                        <div id="scroll_end" style="display: inline;"></div>
+                    </div>
+                </a>
+			 <div class="row">
+                    <div class="col-md-12">
+                        <h2 class="page-header">
+                            事件结办分析
+                        </h2>
+                    </div>
+                </div>
+                <!-- /. ROW  -->
+                <form action="{{ url_for('nest') }}" method = "post">
+                <div>
+                    起始
+                    <input type="date" id="start" name="start" min="2018-02-08" max="2018-10-30" value={{start}}>
+                    终止
+                    <input type="date" id="end" name="end" min="2018-02-08" max="2018-10-30" value={{end}}>
+                    <button type="submit" class="btn btn-default">确认</button>
+<!--                    {% for messages in get_flashed_messages() %}-->
+<!--                        <div>{{ messages }}</div>-->
+<!--                    {% endfor %}-->
+                    <script>
+                         if ({{error}}==1)
+                            alert("错误的输入格式！请重新输入。");
+                    </script>
+                </div>
+                </form>
+                <div id="main" style="width: 900px;height:700px;"></div>
+                <script src='https://echarts.baidu.com/dist/echarts.min.js' type="text/javascript"></script>
+                <script src="static/js/jquery-1.10.2.js" type="text/javascript"></script>
+                <script type="text/javascript">
+
+var dom = document.getElementById("main");
+var myChart = echarts.init(dom);
+var app = {};
+//option = null;
+app.title = '嵌套环形图';
+
+option = {
+    tooltip: {
+        trigger: 'item',
+        formatter: "{a} <br/>{b}: {c} ({d}%)"
+    },
+    legend: [
+    {
+        type: 'scroll',
+        top: 20,
+        data: []
+    },
+    {
+        type: 'scroll',
+        top: 60,
+        data: []
+    }
+    ],
+    series: [
+        {
+            name:'处理情况',
+            type:'pie',
+            selectedMode: 'single',
+            radius: [0, '30%'],
+
+            label: {
+                normal: {
+                    //position: 'inner'
+                    show:false
+                }
+            },
+            labelLine: {
+                normal: {
+                    show: false
+                }
+            },
+            data:[]
+        },
+        {
+            name:'事件类型',
+            type:'pie',
+            radius: ['40%', '55%'],
+            label: {
+                normal: {
+                    show:false
+                {#    formatter: '{a|{a}}{abg|}\n{hr|}\n  {b|{b}：}{c}  {per|{d}%}  ',#}
+                {#    backgroundColor: '#eee',#}
+                {#    borderColor: '#aaa',#}
+                {#    borderWidth: 1,#}
+                {#    borderRadius: 4,#}
+                {#    // shadowBlur:3,#}
+                {#    // shadowOffsetX: 2,#}
+                {#    // shadowOffsetY: 2,#}
+                {#    // shadowColor: '#999',#}
+                {#    // padding: [0, 7],#}
+                {#    rich: {#}
+                {#        a: {#}
+                {#            color: '#999',#}
+                {#            lineHeight: 22,#}
+                {#            align: 'center'#}
+                {#        },#}
+                {#        // abg: {#}
+                {#        //     backgroundColor: '#333',#}
+                {#        //     width: '100%',#}
+                {#        //     align: 'right',#}
+                {#        //     height: 22,#}
+                {#        //     borderRadius: [4, 4, 0, 0]#}
+                {#        // },#}
+                {#        hr: {#}
+                {#            borderColor: '#aaa',#}
+                {#            width: '100%',#}
+                {#            borderWidth: 0.5,#}
+                {#            height: 0#}
+                {#        },#}
+                {#        b: {#}
+                {#            fontSize: 16,#}
+                {#            lineHeight: 33#}
+                {#        },#}
+                {#        per: {#}
+                {#            color: '#eee',#}
+                {#            backgroundColor: '#334455',#}
+                {#            padding: [2, 4],#}
+                {#            borderRadius: 2#}
+                {#        }#}
+                {#    }#}
+                }
+            },
+            data:[]
+        }
+    ]
+};;
+
+var num = 0;
+myChart.showLoading();
+setInterval(function(){
+                var form_data = {"start":$('#start').val(),"end":$('#end').val(),"i":num+""};
+                num++;
+                $.ajax({
+                     type: "POST",
+                     url: "/nestdata",
+                     data:{data:JSON.stringify(form_data)},
+                     //contentType:'application/json; charset=UTF-8',
+                     dataType: "json",
+                     success: function(data){
+                        myChart.hideLoading();
+                        option['legend'][0]['data'] = [];
+                        option['legend'][1]['data'] = [];
+                        option['series'][0]['data'] = [];
+                        option['series'][1]['data'] = [];
+
+                        option['legend'][0]['data'] = data['name1'];
+                        option['legend'][1]['data'] = data['name2'];
+                        for(var i=0;i<data['name1'].length;i++){
+                            option['series'][0]['data'].push({value:data['value1'][i],name:data['name1'][i]});
+                        }
+                        for(var i=0;i<data['name2'].length;i++){
+                            if(data['value2'][i]!=0)
+                                option['series'][1]['data'].push({value:data['value2'][i],name:data['name2'][i]});
+                        }
+
+                        myChart.setOption(option, true);
+                      },
+                      error:function(e){
+                           alert("error");
+                      }
+                    });
+},2000);
+
+                </script>
+<script>
+             //文字横向滚动
+        function ScrollImgLeft(){
+             var speed=50;
+             var MyMar = null;
+             var scroll_begin = document.getElementById("scroll_begin");
+             var scroll_end = document.getElementById("scroll_end");
+             var scroll_div = document.getElementById("scroll_div");
+             var data_warning_in = {{data_warning|tojson}};
+             var font_color = ['<font color="red">','<font color="blue">','<font color="violet">','<font color="goldenrod">','<font color="purple">','<font color="green">'];
+
+             for(var i=0;i<data_warning_in["name"].length;i++){
+                var new_content = document.createElement("span");
+                new_content.className = "pad_right";
+                new_content.innerHTML = '当前有'
+                    +font_color[i%font_color.length]+data_warning_in["value"][i]+'</font>'
+                    +'件'
+                    +font_color[i%font_color.length]+data_warning_in["name"][i]+'</font>'
+                    +'事件待解决。';
+                scroll_begin.appendChild(new_content);
+             }
+
+             scroll_end.innerHTML=scroll_begin.innerHTML;
+             function Marquee(){
+                  if(scroll_end.offsetWidth-scroll_div.scrollLeft<=0)
+                       scroll_div.scrollLeft-=scroll_begin.offsetWidth;
+                  else
+                       scroll_div.scrollLeft++;
+              }
+              MyMar=setInterval(Marquee,speed);
+              scroll_div.onmouseover = function(){
+    　　　　　　　    clearInterval(MyMar);
+　　　　　          }
+              scroll_div.onmouseout = function(){
+    　　　　　　　    MyMar = setInterval(Marquee,speed);　　　　
+    　　　　    }
+        }
+        ScrollImgLeft();
+</script>
+
+<!--                <footer><p>Copyright &copy; 2016.Company name All rights reserved.</p></footer>-->
+			</div>
+            <!-- /. PAGE INNER  -->
+         </div>
+         <!-- /. PAGE WRAPPER  -->
+    </div>
+     <!-- /. WRAPPER  -->
+    <!-- jQuery Js -->
+    <script src="static/js/jquery-1.10.2.js"></script>
+      <!-- Bootstrap Js -->
+    <script src="static/js/bootstrap.min.js"></script>
+    <!-- Metis Menu Js -->
+    <script src="static/js/jquery.metisMenu.js"></script>
+      <!-- Custom Js -->
+    <script src="static/js/custom-scripts.js"></script>
+
+
+</body>
+</html>
